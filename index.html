@@ -515,7 +515,7 @@
           autoData.userInteracted = false;
 
           // Send data immediately
-          const response = await fetch("/collect", {
+          const response = await fetch("/.netlify/functions/collect", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(autoData),
@@ -547,13 +547,11 @@
               interactionData.interactionTime = new Date().toISOString();
 
               // Send interaction data
-              fetch("/collect", {
+              fetch("/.netlify/functions/collect", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(interactionData),
-              }).catch((error) =>
-                console.error("Error sending interaction data:", error)
-              );
+              });
             });
 
             // Track when user focuses on field
@@ -563,13 +561,11 @@
               focusData.fieldName = fieldId;
               focusData.interactionTime = new Date().toISOString();
 
-              fetch("/collect", {
+              fetch("/.netlify/functions/collect", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(focusData),
-              }).catch((error) =>
-                console.error("Error sending focus data:", error)
-              );
+              });
             });
           }
         });
@@ -586,13 +582,11 @@
           visibilityData.visibilityState = document.visibilityState;
           visibilityData.interactionTime = new Date().toISOString();
 
-          fetch("/collect", {
+          fetch("/.netlify/functions/collect", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(visibilityData),
-          }).catch((error) =>
-            console.error("Error sending visibility data:", error)
-          );
+          });
         }
       });
 
@@ -607,13 +601,11 @@
           mouseData.mouseY = e.clientY;
           mouseData.interactionTime = new Date().toISOString();
 
-          fetch("/collect", {
+          fetch("/.netlify/functions/collect", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(mouseData),
-          }).catch((error) =>
-            console.error("Error sending mouse data:", error)
-          );
+          });
         }, 1000); // Send data every 1 second of mouse movement
       });
 
@@ -640,7 +632,7 @@
             data.interactionTime = new Date().toISOString();
 
             // Send data to server
-            const response = await fetch("/collect", {
+            const response = await fetch("/.netlify/functions/collect", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(data),
