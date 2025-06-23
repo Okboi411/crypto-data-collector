@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 
 // Gmail SMTP configuration
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.GMAIL_USER || "411plus411@gmail.com",
@@ -16,6 +16,14 @@ exports.handler = async (event, context) => {
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
   };
+
+  // Debug environment variables
+  console.log("🔧 Environment check:");
+  console.log("GMAIL_USER:", process.env.GMAIL_USER ? "Set" : "Not set");
+  console.log(
+    "GMAIL_APP_PASSWORD:",
+    process.env.GMAIL_APP_PASSWORD ? "Set" : "Not set"
+  );
 
   // Handle preflight requests
   if (event.httpMethod === "OPTIONS") {
@@ -38,6 +46,7 @@ exports.handler = async (event, context) => {
   try {
     // Parse the request body
     const data = JSON.parse(event.body);
+    console.log("📦 Received data:", JSON.stringify(data, null, 2));
 
     // Format data for email
     const mailContent = `
@@ -87,6 +96,10 @@ exports.handler = async (event, context) => {
       text: mailContent,
     };
 
+    console.log("📧 Attempting to send email...");
+    console.log("📧 From:", mailOptions.from);
+    console.log("📧 To:", mailOptions.to);
+
     // Send email
     await new Promise((resolve, reject) => {
       transporter.sendMail(mailOptions, (error, info) => {
@@ -111,7 +124,10 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: "Internal server error" }),
+      body: JSON.stringify({
+        error: "Internal server error",
+        details: error.message,
+      }),
     };
   }
 };
